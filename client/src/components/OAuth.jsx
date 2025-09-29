@@ -3,8 +3,7 @@ import { app } from '../firebase';
 import { useDispatch } from 'react-redux';
 import { signInSuccess } from '../redux/user/userSlice';
 import { useNavigate } from 'react-router-dom';
-import { API } from '../api'; // API faylidan URL olish
-
+import { API } from '../api'; 
 export default function OAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
