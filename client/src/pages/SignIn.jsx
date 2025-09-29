@@ -7,6 +7,7 @@ import {
 } from '../redux/user/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import OAuth from '../components/OAuth';
+import { API } from '../api'; 
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
@@ -14,6 +15,7 @@ export default function SignIn() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -22,24 +24,31 @@ export default function SignIn() {
     e.preventDefault();
     try {
       dispatch(signInStart());
-      const res = await fetch('/api/auth/signin', {
+
+      const res = await fetch(API.signin, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        credentials: 'include', 
       });
+
       const data = await res.json();
-      if (data.success === false) {
+
+      if (!res.ok || data.success === false) {
         dispatch(signInFailure(data));
         return;
       }
+
       dispatch(signInSuccess(data));
       navigate('/');
-    } catch (error) {
-      dispatch(signInFailure(error));
+    } catch (err) {
+      console.error('Sign in error:', err);
+      dispatch(signInFailure({ message: 'Sign in failed' }));
     }
   };
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl text-center font-semibold my-7'>Sign In</h1>
@@ -50,6 +59,7 @@ export default function SignIn() {
           id='email'
           className='bg-slate-100 p-3 rounded-lg'
           onChange={handleChange}
+          required
         />
         <input
           type='password'
@@ -57,6 +67,7 @@ export default function SignIn() {
           id='password'
           className='bg-slate-100 p-3 rounded-lg'
           onChange={handleChange}
+          required
         />
         <button
           disabled={loading}
@@ -67,14 +78,16 @@ export default function SignIn() {
         <OAuth />
       </form>
       <div className='flex gap-2 mt-5'>
-        <p>Dont Have an account?</p>
+        <p>Don’t have an account?</p>
         <Link to='/sign-up'>
           <span className='text-blue-500'>Sign up</span>
         </Link>
       </div>
-      <p className='text-red-700 mt-5'>
-        {error ? error.message || 'Something went wrong!' : ''}
-      </p>
+      {error && (
+        <p className='text-red-700 mt-5'>
+          {error.message || 'Something went wrong!'}
+        </p>
+      )}
     </div>
   );
 }
